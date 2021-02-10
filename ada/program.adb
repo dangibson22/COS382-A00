@@ -9,8 +9,7 @@ use  Ada.Numerics.Elementary_Functions;
 
 procedure Program is
   N     : Integer;
-  Prime : Boolean;
-  X     : Integer;
+  Done  : Boolean;
 
   -- type PrimeInt is range 2 .. Integer'Last;
   type PrimePartitionList is array (Natural range<>) of Integer;
@@ -23,7 +22,7 @@ procedure Program is
     if N <= 1 then
       return false;
     end if;
-    for I in 2 .. Integer (Sqrt (Float (N))) loop
+    for I in 2 .. Integer ( Sqrt ( Float ( N ))) loop
       if N mod I = 0 then
         return false;
       end if;
@@ -47,42 +46,54 @@ procedure Program is
     I : Integer := 1;
   begin
     for J in A .. B loop
-      exit when I > PrimesList'Length;
-       if Is_Prime (J) then
+      if Is_Prime (J) then
         PrimesList (I) := J;
         I := I + 1;
       end if;
+      exit when I > PrimesList'Length;
     end loop;
     return PrimesList;
   end Primes;
 
-  function Recursive_Test ( X: Integer; PrevList: PrimePartitionList ) return Integer is
-    NewList : PrimePartitionList(0 .. PrevList'Length);
-    Value : Integer;
+  function Prime_Partitions ( N: Integer; K: Integer; PList: PrimePartitionList ) return Boolean is
+    NewPList : PrimePartitionList(0 .. PList'Length);
+    Done     : Boolean := true;
   begin
-    for I in PrevList'Range loop
-       NewList (I) := PrevList (I);
-    end loop;
-    NewList (NewList'Last) := NewList'Last;
-    for I in NewList'Range loop
-       Put (Integer'Image (NewList (I)));
-    end loop;
-    New_Line;
-    if X < 3 then
-      Value := Recursive_Test (X + 1, NewList);
+    if N = 0 then
+      -- haven't found a clean method for splitting Ada arrays,
+      -- so instead iterating over each item
+      for I of PList loop
+        if I = PList (PList'Last) then
+          Put (Integer'Image (I));
+        else
+          Put (Integer'Image (I) & " +");
+        end if;
+      end loop;
+      New_Line;
+    elsif N > K then
+      for I in PList'Range loop
+         NewPList (I) := PList (I);
+      end loop;
+      for P of Primes(K + 1, N) loop
+        NewPList (NewPList'Last) := P;
+        Done := Prime_Partitions (N - P, P, NewPList);
+      end loop;
     end if;
-    return 1;
-  end Recursive_Test;
+
+    return Done;
+
+
+  end Prime_Partitions;
 
 begin
-  Put ("Enter a number: ");
-  Get (N);
-  Put_Line("number:" & Integer'Image (N));
-  Prime := Is_Prime (N);
-  Put_Line("is prime: " & Boolean'Image (Prime));
-
-  X := Recursive_Test(0, StartList);
-  Put_Line("finished" & Integer'Image (X));
-
-
+  loop
+    Put ("Enter a number (non-number to quit): ");
+    Get (N);
+    New_Line;
+    Done := Prime_Partitions(N, 1, StartList);
+    Put_Line ("Done :" & Boolean'Image(Done));
+  end loop;
+exception
+  when Data_Error =>
+    Put_Line("Thanks for playing, bye!");
 end Program;
