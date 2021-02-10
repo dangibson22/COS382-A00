@@ -1,6 +1,6 @@
 --SOLI DEO GLORIA
 
-isPrimeInner :: Integer -> Integer -> Bool
+isPrimeInner :: Int -> Int -> Bool
 isPrimeInner n i =
     if n <= 1
         then False
@@ -11,10 +11,10 @@ isPrimeInner n i =
     else isPrimeInner n (i-1) --Recursive Case (current iterator does not divide n)
 
 --Wrapper function for isPrimeInner so I only have to enter the number in question
-isPrime :: Integer -> Bool
+isPrime :: Int -> Bool
 isPrime n = isPrimeInner n (n-1)
 
-listPrimesInner :: Integer -> Integer -> [Integer] -> [Integer]
+listPrimesInner :: Int -> Int -> [Int] -> [Int]
 listPrimesInner low i primes =
     if i < low
         then primes
@@ -23,7 +23,7 @@ listPrimesInner low i primes =
     else listPrimesInner low (i-1) primes
 
 --Wrapper function. List the prime numbers within the range [a, b] inclusive
-listPrimes :: Integer -> Integer -> [Integer]
+listPrimes :: Int -> Int -> [Int]
 listPrimes a b = listPrimesInner a b []
 
 {-
@@ -36,7 +36,7 @@ listPrimes a b = listPrimesInner a b []
         partitions: [[int]] -- the list of valid combinations, should result in the final answer
     Returns: partitions: [[int]] -- The list of all valid partitions
 -}
-primePartitionsInner :: Integer -> [Integer] -> [Integer] -> Integer -> Integer -> [[Integer]] -> [[Integer]]
+primePartitionsInner :: Int -> [Int] -> [Int] -> Int -> Int -> [[Int]] -> [[Int]]
 primePartitionsInner query primesList currentAddends minAvail startIdx partitions =
     if startIdx >= (length primesList) -- Base Case: No more primes are available
         then partitions
@@ -44,7 +44,7 @@ primePartitionsInner query primesList currentAddends minAvail startIdx partition
         then primePartitionsInner
             query
             primesList
-            (currentAddends ++ (primesList !! minAvail))
+            (currentAddends ++ [primesList !! minAvail])
             (minAvail + 1)
             startIdx
             partitions
@@ -55,9 +55,9 @@ primePartitionsInner query primesList currentAddends minAvail startIdx partition
             []-- start a new set for possible partition
             (startIdx + 1)--minAvail must not be less than start index
             (startIdx + 1)
-            (partitions ++ (currentAddends ++ (primesList !! minAvail)))-- Appends current Partition with newest entry to partitions
-    else if (query - (sum currentAddends) - (primesList !! minAvail)) < 0-- Case 3: current combo one work. Backtrace a step and move to next item in Primes List
-        then primePartitionsInner
+            (partitions ++ [currentAddends ++ [primesList !! minAvail]])-- Appends current Partition with newest entry to partitions
+    else -- Case 3: current combo one work. Backtrace a step and move to next item in Primes List
+        primePartitionsInner
             query
             primesList
             (init currentAddends)-- init returns all but the last item of a list (essentially pops)
@@ -66,7 +66,7 @@ primePartitionsInner query primesList currentAddends minAvail startIdx partition
             partitions
 
 --Wrapper function. Lists the partitions
-primePartitions :: Integer -> [[Integer]]
+primePartitions :: Int -> [[Int]]
 primePartitions query = primePartitionsInner
     query
     (listPrimes 0 query)
@@ -82,4 +82,4 @@ testFunc a =
         [[diff]]
 
 main = do
-    print (testFunc 5)
+    print (primePartitions 12)
