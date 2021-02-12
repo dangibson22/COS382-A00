@@ -39,11 +39,9 @@ listPrimes a b = listPrimesInner a b []
         partitions: [[int]] -- the list of valid combinations, should result in the final answer
     Returns: partitions: [[int]] -- The list of all valid partitions
 -}
-primePartitionsInner :: Int -> [Int] -> [Int] -> Int -> Int -> Int -> [[Int]] -> [[Int]]
-primePartitionsInner query primesList currentAddends minAvail nextIdx startIdx partitions =
-    if startIdx >= (length primesList) -- Base Case: No more primes are available
-        then partitions
-    else if minAvail >= (length primesList)
+primePartitionsInner :: Int -> [Int] -> [Int] -> Int -> [[Int]] -> [[Int]]
+primePartitionsInner query primesList currentAddends minAvail partitions =
+    if minAvail >= (length primesList) -- && (length currentAddends) == 0
         then partitions
     else if (query - (sum currentAddends) - (primesList !! minAvail)) > 0 -- Case 1: Possibility of prime number being part of a partition
         then primePartitionsInner
@@ -51,40 +49,30 @@ primePartitionsInner query primesList currentAddends minAvail nextIdx startIdx p
             primesList
             (currentAddends ++ [primesList !! minAvail])
             (minAvail + 1)
-            nextIdx
-            startIdx
             partitions
     else if (query - (sum currentAddends) - (primesList !! minAvail)) == 0 -- Case 2: minAvail completes a valid partition
-        then primePartitionsInner
-            query
-            primesList
-            []-- start a new set for possible partition
-            (startIdx + 1)--minAvail must not be less than start index
-            nextIdx
-            (startIdx + 1) --Causes errors! only takes first possibility for each starting number!!!!!!!!!
-            (partitions ++ [currentAddends ++ [primesList !! minAvail]])-- Appends current Partition with newest entry to partitions
-    else -- Case 3: current combo won't work. Backtrace a step and move to next item in Primes List
-        if (length currentAddends) <= 1 --Move on to next start value
+        then if (length currentAddends) > 0
             then primePartitionsInner
                 query
                 primesList
-                (init currentAddends)-- init returns all but the last item of a list (essentially pops)
-                (startIdx + 1)
-                nextIdx
-                (startIdx + 1)
-                partitions
-        else
-            primePartitionsInner
-                query
-                primesList
-                (init currentAddends)-- init returns all but the last item of a list (essentially pops)
+                (init currentAddends)-- pop most recent addend
                 (fromJust (elemIndex
                     (last currentAddends)
                     primesList
                 ) + 1) --Set minAvail to the index 1 past the last item on the currentAddends within the primesList
-                nextIdx
-                startIdx
-                partitions
+                (partitions ++ [currentAddends ++ [primesList !! minAvail]])-- Appends current Partition with newest entry to partitions
+        else --Base Case: final number in list is equal to number input.
+            partitions ++ [[primesList !! minAvail]]
+    else -- Case 3: current combo won't work. Backtrace a step and move to next item in Primes List
+        primePartitionsInner
+            query
+            primesList
+            (init currentAddends)-- init returns all but the last item of a list (essentially pops)
+            (fromJust (elemIndex
+                (last currentAddends)
+                primesList
+            ) + 1) --Set minAvail to the index 1 past the last item on the currentAddends within the primesList
+            partitions
 
 --Wrapper function. Lists the partitions
 primePartitions :: Int -> [[Int]]
@@ -92,8 +80,6 @@ primePartitions query = primePartitionsInner
     query
     (listPrimes 0 query)
     []
-    0
-    0
     0
     []
 
