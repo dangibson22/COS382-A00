@@ -1,3 +1,7 @@
 ada/program.ali
 ada/program.o
 readme.html
+.vscode
+C#/bin
+C#/obj
+C#/C#.csproj
