@@ -90,9 +90,6 @@ testFunc a =
         [[diff]]
 
 main = do
-    print (primePartitions 0)
-    print (primePartitions 1)
-    print (primePartitions 2)
-    print (primePartitions 5)
-    print (primePartitions 12)
-    print (primePartitions 42)
+    putStrLn("Enter a number")
+    number <- getLine
+    print (primePartitions (read number :: Int))
