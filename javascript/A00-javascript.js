@@ -1,3 +1,9 @@
+const readline = require("readline");
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+
 function isPrime (n) {
     if (n<=1) {
         return false;
@@ -37,12 +43,17 @@ function primePartitions(n, k=1, lst=[]) {
 
 function main() {
     let number = 0;
-    while (!isNaN(number)) {
-        number = window.prompt("Please enter a number. Type any non-number to quit");
-        if (isNaN(number)) {break;}
-        primePartitions(number);
-    }
-    console.log("goodbye");
+    //while (!isNaN(number)) {
+        rl.question("Please enter a number. Type any non-number to quit: ", (num) => {
+            number = num
+            if (isNaN(number)) {
+                console.log("goodbye");
+                process.exit();
+            }
+            primePartitions(number);
+            main();
+        });
+    //}
 }
 
 main();

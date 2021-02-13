@@ -80,14 +80,14 @@ primePartitions query = primePartitionsInner
     []
     0
     []
-
-testFunc :: Integer -> [[Integer]]
-testFunc a = 
-    let diff = (a - 8 - 3)
-    in
-        [[diff]]
-
+    
 main = do
     putStrLn("Enter a number")
     number <- getLine
-    print (primePartitions (read number :: Int))
+    putStr (
+        intercalate 
+        "\n" 
+        (map 
+            show 
+            (primePartitions (read number :: Int))))
+    putStr "\n"
