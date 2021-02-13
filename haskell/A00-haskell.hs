@@ -34,8 +34,6 @@ listPrimes a b = listPrimesInner a b []
         primesList: [int] -- the list of primes within the range (0, query) inclusive.
         currentAddends: [int] -- the list of primes currently being summed together to check for a valid partition
         minAvail: int -- Index of the smallest prime number in primesList available to be added to currentAddends
-        nextIdx: int -- Index of the next valid point after the start
-        startIdx: int -- Index of the smallest prime number possible for the first entry to Addends
         partitions: [[int]] -- the list of valid combinations, should result in the final answer
     Returns: partitions: [[int]] -- The list of all valid partitions
 -}
