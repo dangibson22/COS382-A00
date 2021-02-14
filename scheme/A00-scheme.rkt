@@ -61,7 +61,7 @@
 
 
 (define (main)
-  (display "Enter a number: ")
+  (display "Enter a number (Ctrl+C to quit): ")
   (primePartitions (read))
   (main)
 )

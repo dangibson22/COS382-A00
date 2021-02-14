@@ -20,7 +20,7 @@ primePartitions(N, K, List) :-
       member(Prime, List),
       (
         write(Prime),
-        write(" + ")
+        last(List, Prime) -> ( write("") ) ; ( write(" + ") )
       )
     ),
     writeln("")
@@ -47,3 +47,5 @@ primePartitions(N, K, List) :-
   )
   ;
   write("").
+
+runPrimePartitions(N) :- primePartitions(N, 1, []).
