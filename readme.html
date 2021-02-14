@@ -1,0 +1,517 @@
+**A00 - Comparing Languages**
+
+This is a sample write up for the A00_LanguageComparison assignment.
+
+
+<!--
+
+General
+========
+
+For each of your team's implementations, explain the following (where appropriate and applicable):
+
+- details on calling conventions, input and output data formats, limitations, bugs, and special features.
+- negative aspects of your program (limitations, known bugs)
+- positive aspects (extensions, special features)
+- describe your choice of modularization (abstractions), data structures, and algorithms
+- explain anything you did that is likely to be different from what other students may have done
+- justify any design decisions for which the rationale isn't immediately clear
+
+Feel free to modify the structure of this `readme.html` file to fit the current assignment and to fit how you wish to present your findings.
+
+
+Submission
+-----------
+
+
+Create a zip file that contains all of your code, this `readme.html` document, and any additional files of evidence (ex: screenshots).
+
+Use folders to divide up the subparts of your submission.
+For example, your zip file could look like the following:
+
+~~~~
+readme.html
+ada/
+    primepartitions.adb
+    screenshot.png
+go/
+    primepartitions.go
+    screenshot.png
+haskell/
+    primepartitions.hs
+    screenshot.png
+prolog/
+    primepartitions.pl
+    screenshot.png
+python/
+    primepartitions.py
+    screenshot.png
+~~~~
+-->
+
+
+Author
+=============
+
+<!-- Note: wrapping table in div.noheader will hide the table's header -->
+<!-- Note: wrapping table in div.firstcol will style the first column different from other columns -->
+<div class="noheader firstcol">
+                  |             
+------------------|-------------
+name              | Daniel Gibson
+computer + OS     | Euler lab machines, Linux
+time to complete  | 12 hours
+partner           | Trevor Mitchell
+additional help   | see Reflection section
+</div>
+
+
+
+Prime Partitions
+=================
+
+42 has 15 prime partitions, and they are...<br>
+2 + 3 + 5 + 13 + 19<br>
+2 + 3 + 7 + 11 + 19<br>
+2 + 3 + 7 + 13 + 17<br>
+2 + 3 + 37<br>
+2 + 5 + 7 + 11 + 17<br>
+2 + 11 + 29<br>
+2 + 17 + 23<br>
+3 + 5 + 11 + 23<br>
+3 + 7 + 13 + 19<br>
+3 + 7 + 11 + 19<br>
+5 + 7 + 13 + 17<br>
+5 + 37<br>
+11 + 31<br>
+13 + 29<br>
+19 + 23<br>
+
+Implementations
+================
+
+
+Language: Ada
+--------------------------------
+
+<!-- Details, source code, and screenshots here -->
+<!-- Include screenshot showing prime partitions of 42 -->
+Source code:
+~~~
+-- compile Ada using gnatmake {filename} on terminal
+
+with Ada.Text_IO;         use Ada.Text_IO;
+with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+with Ada.Numerics;        use Ada.Numerics;
+
+with Ada.Numerics.Elementary_Functions;
+use  Ada.Numerics.Elementary_Functions;
+
+procedure Program is
+  N     : Integer;
+  Done  : Boolean;
+
+  -- type PrimeInt is range 2 .. Integer'Last;
+  type PrimePartitionList is array (Natural range<>) of Integer;
+  type PrimeNumberList is array (Natural range<>) of Integer;
+
+  StartList : PrimePartitionList (1 .. 0);
+
+  function Is_Prime ( N: Integer ) return Boolean is
+  begin
+    if N <= 1 then
+      return false;
+    end if;
+    for I in 2 .. Integer ( Sqrt ( Float ( N ))) loop
+      if N mod I = 0 then
+        return false;
+      end if;
+    end loop;
+    return true;
+  end Is_Prime;
+
+  function GetListLength ( A, B: Natural ) return Integer is
+    Size : Integer := (B - A) + 1;
+  begin
+    for I in A .. B loop
+       if not Is_Prime(I) then
+        Size := Size - 1;
+      end if;
+    end loop;
+    return size;
+  end GetListLength;
+
+  function Primes(A, B: Integer) return PrimeNumberList is
+    PrimesList : PrimeNumberList(1 .. GetListLength(A, B));
+    I : Integer := 1;
+  begin
+    for J in A .. B loop
+      if Is_Prime (J) then
+        PrimesList (I) := J;
+        I := I + 1;
+      end if;
+      exit when I > PrimesList'Length;
+    end loop;
+    return PrimesList;
+  end Primes;
+
+  function Prime_Partitions ( N: Integer; K: Integer; PList: PrimePartitionList ) return Boolean is
+    NewPList : PrimePartitionList(0 .. PList'Length);
+    Done     : Boolean := true;
+  begin
+    if N = 0 then
+      -- haven't found a clean method for splitting Ada arrays,
+      -- so instead iterating over each item
+      for I of PList loop
+        if I = PList (PList'Last) then
+          Put (Integer'Image (I));
+        else
+          Put (Integer'Image (I) & " +");
+        end if;
+      end loop;
+      New_Line;
+    elsif N > K then
+      for I in PList'Range loop
+         NewPList (I) := PList (I);
+      end loop;
+      for P of Primes(K + 1, N) loop
+        NewPList (NewPList'Last) := P;
+        Done := Prime_Partitions (N - P, P, NewPList);
+      end loop;
+    end if;
+
+    return Done;
+
+
+  end Prime_Partitions;
+
+begin
+  loop
+    Put ("Enter a number (non-number to quit): ");
+    Get (N);
+    New_Line;
+    Done := Prime_Partitions(N, 1, StartList);
+    Put_Line ("Done :" & Boolean'Image(Done));
+  end loop;
+exception
+  when Data_Error =>
+    Put_Line("Thanks for playing, bye!");
+end Program;
+~~~
+
+Evidence of working code:<br>
+![Ada program giving prime partitions for 42](./ada/ada-output.png width="600px")<br>
+Implementatiing Ada was made easier through the use of a few helper functions.
+First, I define the `Is_Prime` function to return whether an integer N is a prime number or not.
+I then have the `Primes` function, which uses the `GetListLength` function to help this process.
+The `GetListLength` function takes a range of numbers and returns the count of prime numbers in that range.
+This value is then used to define the length of the `PrimesList` array created at the start of `Primes`.
+For each number in the range, I check if it's a prime, and if so it is added to `PrimesList`.
+One nice feature of this implementation is that the program knows when the last prime number in the range is found, so it can simply return at that point.
+With these helper functions defined, I then move to the `Prime_Partitions` function.
+One unique part of this implementation is that I don't need to create a fixed size list at the start of the program.
+Instead, each time the recursive function is called, I create a new list called `NewPList` that
+has a length of 1 greater than the input `PList`. I then copy each element from `PList` over to `NewPList`
+and when I call `Primes` (which works nicely as an iterable), I add the new value to the end of `NewPList`.
+I then recursively call `Prime_Partitions` passing `NewPList` as the `PList` parameter.
+Other then that, the function looks fairly similar to the Python solution provided by Dr. Denning (apart from the obvious semantic differences).
+
+
+Language: Haskell  <!-- include only the language that you chose, delete others -->
+--------------------------------
+
+<!-- Details, source code, and screenshots here -->
+<!-- Include screenshot showing prime partitions of 42 -->
+
+Language: C#, Go, or Rust  <!-- include only the language that you chose, delete others -->
+--------------------------------
+
+<!-- Details, source code, and screenshots here -->
+<!-- Include screenshot showing prime partitions of 42 -->
+
+Language: Javascript, Perl, or Ruby  <!-- include only the language that you chose, delete others -->
+--------------------------------
+
+<!-- Details, source code, and screenshots here -->
+<!-- Include screenshot showing prime partitions of 42 -->
+
+Language: Prolog
+--------------------------------
+
+<!-- Details, source code, and screenshots here -->
+<!-- Include screenshot showing prime partitions of 42 -->
+Source code:<br>
+~~~
+% divisible is a recursive predicate that, given if X and Y, range(Y, X) is divisible by X
+divisible(X, Y) :- 0 is X mod Y, !.
+divisible(X, Y) :- X > Y + 1, divisible(X, Y+1).
+
+% tells if number is prime.
+% - 2 is prime
+% - 1 or lower is not prime
+% - number is prime if it is not divisible by any other number
+isPrime(X) :-
+  X = 2 -> true ;
+  X < 2 -> false ;
+  not(divisible(X, 2)).
+
+primePartitions(N, K, List) :-
+  N = 0 ->
+  (
+    % remainder is 0 means sum(lst) = original number
+    % lst is now the prime partition
+    forall(
+      member(Prime, List),
+      (
+        write(Prime),
+        last(List, Prime) -> ( write("") ) ; ( write(" + ") )
+      )
+    ),
+    writeln("")
+  ) ; 
+  N > K ->
+  (
+    % might have primes that can contribute to partition
+    % iterate over all numbers remaining
+    Z is K + 1,
+    forall(
+      between(Z, N, P),
+      (
+        % if P is prime, add it to List and activate recursion
+        isPrime(P) ->
+        (
+          append(List, [P], NewList),
+          NewN is N - P,
+          primePartitions(NewN, P, NewList)
+        )
+        ;
+        write("")
+      )
+    )
+  )
+  ;
+  write("").
+
+% wrapper function for primePartitions
+runPrimePartitions(N) :- primePartitions(N, 1, []).
+~~~
+
+Evidence of working code:<br>
+![Prolog program giving prime partitions for 42](./prolog/prolog-output.png width="600px")<br>
+
+Prolog was a very odd language to work with. However, I was able to put together a working solution.
+There are definitely better ways to use the Prolog language to solve this problem, but as I am quite unfamilliar
+with Prolog I wasn't able to implement those. My solution still gets the job done. I start with a predicate `isPrime` to
+determine whether a number is prime or not. It uses a recursive predicate `divisible` to check whether a number is divisible
+by any other number.
+Since Prolog doesn't allow for return values, I wasn't able to implement a `primes` predicate to neatly give a list of primes.
+I instead built the desired functionality of `primes` into the `primePartitions` predicate. I use the `between` predicate to generate
+a list of numbers, the `isPrime` predicate to discern which numbers are primes, and the `forall` predicate to iterate through the list.
+I also `append` the current prime `P` to the input list of primes `List` and assign that to `NewList`, which I then pass to `primePartitions`.
+Since Prolog handles I/O weirdly, I didn't try and set up an infinite loop to handle user input, but otherwise it functions the same.
+
+Language: Scheme (extra credit)
+--------------------------------
+
+<!-- Details, source code, and screenshots here -->
+<!-- Include screenshot showing prime partitions of 42 -->
+
+Source code:<br>
+~~~
+#lang racket
+
+(define (isPrimeLoop lower upper n)
+  (cond ((> lower upper) #t)
+        ((= (modulo n lower) 0)#f)
+        (else (isPrimeLoop (+ lower 1) upper n))
+  )
+)
+
+(define (isPrime n)
+  (define nSqrt (exact-floor (sqrt n)))
+  (if (<= n 1)
+  #f
+  (begin
+    (isPrimeLoop 2 nSqrt n)
+  )
+  )
+)
+
+(define (primesInner a b pList)
+  (define newList (list))
+  (if (> a b) pList
+    (begin
+      (when (isPrime a)  (set! pList (append pList (list a))))
+      (primesInner (+ a 1) b pList)
+    )
+  )
+)
+
+(define (primes a b) (primesInner a b (list)))
+
+(define (primePartitionsInner n k lst)
+  (cond ((= n 0)
+          (for-each
+            (lambda (i)
+              (if (= i (car (reverse lst)))
+                (begin
+                  (display i)
+                  (display "\n")
+                )
+                (begin
+                  (display i)
+                  (display " + ")
+                )
+              )
+            )
+            lst
+          )
+        )
+        ((> n k)
+          (for-each
+            (lambda (p) (primePartitionsInner (- n p) p (append lst (list p))))
+            (primes (+ k 1) n)
+          )
+        )
+        (else (lambda () ""))
+  )
+)
+
+(define (primePartitions n) (primePartitionsInner n 1 (list)))
+
+
+(define (main)
+  (display "Enter a number (Ctrl+C to quit): ")
+  (primePartitions (read))
+  (main)
+)
+
+(main)
+~~~
+Evidence of working code:<br>
+![Scheme program giving prime partitions for 42](./scheme/scheme-output.png width="600px")<br>
+Scheme was a bit tricky to get used to at first but ended up quite similar to the Python implementation.
+I as able to use the `for-each` function to iterate cleanly. I used the `primes` function to generate a list
+of prime numbers in the specified range, which worked quite well as an iterable for the `for-each` function. 
+As with Prolog, Scheme doesn't have loops, so I had to create multiple recursive functions, but this wasn't
+too difficult. Additionally, since Scheme is a functional language, the use of lambdas throughout made it easier 
+to define specific processes that wouldn't be repeated elsewhere in the program.
+
+Assignment Reflection
+======================
+
+<!-- Note: wrapping table in div.noheader will hide the table's header -->
+<!-- Note: wrapping table in div.firstcol will style the first column different from other columns -->
+<div class="noheader firstcol">
+                        |     
+------------------------|-----
+Ada                     | aaa
+OCaml, Haskell          | bbb
+C#, Go, Rust            | ccc
+JavaScript, Perl, Ruby  | ddd
+Prolog                  | eee
+Scheme (extra)          | fff
+</div>
+
+
+<!--
+How do the languages compare to one another?
+Which language was your favorite?  Which was your least favorite?
+What type of problems would each language be good at solving?
+When you had a choice of language, why did you decide on the language in which you implemented your solution?
+If you worked with a partnor, how did you decide to split up the work?
+
+List any other comments below.
+Feel free to provide any feedback on how much you learned from doing the assignment, and whether you enjoyed doing it.
+-->
+
+
+
+
+
+
+<!-- THE FOLLOWING IS HERE ONLY FOR REFERENCE  -->
+<!-- DELETE THE FOLLOWING SECTION BEFORE SUBMITTING TO CANVAS -->
+<!-- VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV -->
+
+A Few Markdeep Examples
+========================
+
+I have left some examples below to demonstrate how you can format your write-up using Markdeep.
+For more details, see [http://casual-effects.com/markdeep/features.md.html](http://casual-effects.com/markdeep/features.md.html).
+Remove this section from your final submission :)
+
+
+Below is a "Hello, World!" Python program.
+You can include code (`x = 2`) in your sentences, too!
+
+~~~~
+#!/usr/bin/python
+
+print("Hello, World!")
+~~~~
+
+Below is a screenshot showing me running the program above.
+
+![A screenshot showing Python running a "Hello, World!" program.](screenshot.png width="600px")
+
+Note: included images need to be included along with the `readme.html` file.
+
+
+You can even include math ($x = 2$) in your readme.
+For larger equations, use double dollar signs!
+
+$$ f(x) = \sum_{x=0}^{100} \frac{x^2 + 1}{2x + 1} $$
+
+
+<!-- ΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛΛ -->
+
+
+
+
+
+<!--   Feel free to modify the following to fit a theme of your choosing   -->
+<link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet"> <!-- a sans-serif font -->
+<style>  /* A TAYLOR-INSPIRED THEME */
+    body {font-family:'Open Sans',sans-serif;}
+    .md a:link, .md a:visited {color:hsl(252,23.0%,44.3%); font-family:'Open Sans',sans-serif;}
+    .md table.table th {background-color:hsl(252,23.0%,44.3%);}
+    .md .noheader th {display:none;}
+    .md .firstcol td:first-child {white-space:pre;color:white;vertical-align:top;font-weight:bold;border-color:black;background:hsl(252,23.0%,54.3%);}
+    .md .firstcol tr:nth-child(even) td:first-child {background:hsl(252,23.0%,44.3%);}
+</style>
+
+
+<!-- ****************************** -->
+<!--    Leave the content below     -->
+<!-- ****************************** -->
+
+<!-- The script and style below are added for clarity and to workaround a bug -->
+<script>
+    // this is a hack to workaround a bug in Markdeep+Mathjax, where
+    // `$`` is automatically converted to `\(`` and `\)`` too soon.
+    // the following code will replace the innerHTML of all elements
+    // with class "dollar" with a dollar sign.
+    setTimeout(function() {
+        var dollars = document.getElementsByClassName('dollar');
+        for(var i = 0; i < dollars.length; i++) {
+            dollars[i].innerHTML = '&#' + '36;'; // split to prevent conversion to $
+        }
+    }, 1000);
+</script>
+<style>
+    /* adding some styling to <code> tags (but not <pre><code> coding blocks!) */
+    :not(pre) > code {
+        background-color: rgba(0,0,0,0.05);
+        outline: 1px solid rgba(0,0,0,0.15);
+        margin-left: 0.25em;
+        margin-right: 0.25em;
+    }
+    /* fixes table of contents of medium-length document from looking weird if admonitions are behind */
+    .md div.mediumTOC { background: white; }
+    .md div.admonition { position: initial !important; }
+</style>
+
+<!--   Leave the following Markdeep formatting code, as this will format your text above to look nice in a wed browser   -->
+
+<script src="https://casual-effects.com/markdeep/latest/markdeep.min.js"></script><!-- Markdeep: --><style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace}</style><script src="markdeep.min.js"></script><script src="https://casual-effects.com/markdeep/latest/markdeep.min.js?"></script><script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible")</script>

@@ -48,4 +48,5 @@ primePartitions(N, K, List) :-
   ;
   write("").
 
+% wrapper function for primePartitions
 runPrimePartitions(N) :- primePartitions(N, 1, []).
